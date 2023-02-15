@@ -1,7 +1,21 @@
-from flask import Flask
+from flask import Flask, request, jsonify              # Print to App Logger (Console)
+from flask_cors import CORS
+
 
 app = Flask(__name__)
+CORS(app)
 
-@app.route("/")
-def index():
-    return "Hello World!"
+
+@app.route("/", methods=['POST'])
+def process_image():
+	if request.method == "POST":
+		form_data = request.get_data()
+		app.logger.info(form_data)
+		return "Hello World!"
+	else:
+		return "Nemo Backend"
+
+
+
+if __name__ == "__main__":
+    app.run()
