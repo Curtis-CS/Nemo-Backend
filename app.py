@@ -5,11 +5,8 @@ from flask_cors import CORS
 app = Flask(__name__)
 CORS(app)
 
-@app.route("/")
-def base():
-    return "<h1>Nemo Server<h1>"
 
-@app.route("/POST", methods=['POST'])
+@app.route("/", methods=['POST'])
 def process_image():
     if request.method == "POST":
         form_data = request.get_data()
@@ -18,5 +15,4 @@ def process_image():
 
 
 if __name__ == "__main__":
-    print("This is a test")
     app.run()
