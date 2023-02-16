@@ -7,8 +7,8 @@ CORS(app)
 
 
 @app.route("/")
-def process_image():
-	return "<h1>Hello There- Obi</h1>"
+def home():
+	return "<h1>Nemo Backend</h1>"
 
 @app.route("/post", methods=['POST'])
 def process_image():
