@@ -10,7 +10,7 @@ CORS(app)
 def home():
 	return "<h1>Nemo Backend</h1>"
 
-@app.route("/post", methods=['POST'])
+@app.route("/", methods=['POST'])
 def process_image():
 	app.logger.info("This is a test, before checking for post")
 	if request.method == "POST":
