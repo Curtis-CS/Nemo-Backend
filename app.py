@@ -6,7 +6,11 @@ app = Flask(__name__)
 CORS(app)
 
 
-@app.route("/", methods=['POST'])
+@app.route("/")
+def process_image():
+	return "<h1>Hello There- Obi</h1>"
+
+@app.route("/post", methods=['POST'])
 def process_image():
 	app.logger.info("This is a test, before checking for post")
 	if request.method == "POST":
@@ -14,8 +18,6 @@ def process_image():
 		form_data = request.get_data()
 		app.logger.info(form_data)
 		return "Hello World!"
-	else:
-		return "Nemo Backend"
 
 
 
