@@ -12,12 +12,13 @@ def home():
 
 @app.route("/", methods=['POST'])
 def process_image():
-	app.logger.info("This is a test, before checking for post")
+	
+	app.logger.warning("This is a test, before checking for post")
 	if request.method == "POST":
-		app.logger.info("This is a test, after checking for post")
-		form_data = request.get_data()
-		app.logger.info(form_data)
-		return "Hello World!"
+		formData = request.get_json()
+		app.logger.warning(formData)
+		return "The data was recieved!"
+		
 
 
 
