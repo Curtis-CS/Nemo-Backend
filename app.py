@@ -15,12 +15,17 @@ def process_image():
 	
 	app.logger.warning("This is a test, before checking for post")
 	if request.method == "POST":
+		form_data = request.get_data()
+		app.logger.info(form_data)
+		app.logger.warning(form_data)
+		return "Hello World!"
 		# formData = request.get_json()
 		# app.logger.warning(formData)
 		#print(request.form)
-		image_file = request.files.get('image', '')
-		app.logger.warning(image_file)
-		return "The file was recieved!"
+		# image_file = request.files.get('image', '')
+		# app.logger.warning(image_file)
+		# app.logger.warning("The file is here")
+		# return "The file was recieved!"
 		
 
 
