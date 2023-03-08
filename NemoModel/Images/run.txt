@@ -1,0 +1,18 @@
+python3 test.py --data_path ~/Desktop/NemoModel/Images/ --resume ~/Desktop/NemoModel/Nemo-DETR-dg.pth --output_dir ~/Desktop/NemoModel/Images/ --device cpu --disp 1 
+
+python3 
+test.py 
+--data_path 
+~/Desktop/NemoModel/Images/ 
+--resume 
+~/Desktop/NemoModel/Nemo-DETR-dg.pth 
+--output_dir 
+~/Desktop/NemoModel/Images/ 
+--device 
+cpu 
+--disp 
+1 
+
+python3 test.py --data_path ~/Desktop/NemoInterface/NemoBackend/Nemo-Backend/NemoModel/Images/ 
+--resume ~/Desktop/NemoInterface/NemoBackend/Nemo-Backend/NemoModel/Nemo-DETR-dg.pth 
+--output_dir ~/Desktop/NemoInterface/NemoBackend/Nemo-Backend/NemoModel/Images/ --device cpu --disp 1 
