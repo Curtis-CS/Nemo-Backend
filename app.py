@@ -15,12 +15,6 @@ def process_image():
         image_binary = base64.b64decode(theData)
         with open('image.jpg', 'wb') as f:
             f.write(image_binary)
-        # print("Testing Nemo")
-        # subprocess.Popen(["python3", "./NemoModel/detr/test.py", 
-        #                 "--data_path", "./NemoModel/Images/ImagesToRun/", 
-        #                 "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
-        #                 "--output_dir", "./NemoModel/Images/ProcessedImages/", 
-        #                 "--device" , "cpu", "--disp" ,"1"]).wait()
         return "Data Recieved"
 
 if __name__ == "__main__":
