@@ -4,7 +4,6 @@ from PIL import Image
 import subprocess
 import os
 from pathlib import Path
-import io
 import zipfile
 app = Flask(__name__)
 CORS(app)
@@ -21,12 +20,11 @@ def process_image():
         p = Path('./NemoModel/Images/ImagesToRun/' + filename)
         image.save(p)
         if (filesLeft < 1):
-            zipFile = RunNemo()
-            headers = {
-                'Content-Disposition': 'filename=files.zip',
-                'Content-Type': 'application/zip'
-            }
-            return send_file(zipFile, mimetype='application/zip', as_attachment=True, download_name="results.zip")
+            RunNemo()
+            path = os.path.abspath('results.zip')
+            #app.logger.warning(path)
+            #app.logger.warning(os.path.getsize(path))
+            return send_file(path, mimetype='application/zip')
         return 'null'
 
 # Run Nemo
@@ -47,13 +45,14 @@ def RunNemo():
 def GetProcessedImages():
     print("Getting Nemo Results")
     processedImagesDir = './NemoModel/Images/ProcessedImages/Inferences-ImagesToRun'
-    zipFileToSend = io.BytesIO()
-    with zipfile.ZipFile(zipFileToSend, mode="w") as zipFile:
-        for fileName in os.listdir(processedImagesDir):
-            curFilePath = os.path.join(processedImagesDir, fileName)
-            zipFile.write(curFilePath, arcname=fileName)
-    zipFileToSend.seek(0)
-    return zipFileToSend
+    filesToSendBack = []
+    for file in os.listdir(processedImagesDir):
+        filesToSendBack.append(os.path.join(processedImagesDir, file))
+    zipFileToSend = zipfile.ZipFile('results.zip', 'w')
+    for fileName in filesToSendBack:
+        zipFileToSend.write(fileName)
+        #app.logger.warning(fileName)
+    zipFileToSend.close()
 
 #Function to clean up the files so Nemo can run smoothly again
 def CleanUpNemorun():
