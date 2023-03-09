@@ -1,7 +1,8 @@
-from flask import Flask, request
+from flask import Flask, request, send_file
 from flask_cors import CORS
 from PIL import Image
 import subprocess
+import os
 app = Flask(__name__)
 CORS(app)
 
@@ -19,7 +20,7 @@ def process_image():
         #                 "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
         #                 "--output_dir", "./NemoModel/Images/ProcessedImages/", 
         #                 "--device" , "cpu", "--disp" ,"1"]).wait()
-        return "Data Recieved, file Saved"
+        return send_file(os.path.join(os.getcwd(), filename))
 
 #Function to get all of the files Nemo Processed into an array
 def GetProcessedImages():
