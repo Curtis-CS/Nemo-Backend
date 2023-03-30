@@ -13,14 +13,15 @@ CORS(app)
 @app.route("/", methods=['POST'])
 def process_image():
     if request.method == "POST":
+        # Receive Single File
         file = request.files['file']
         files_left = int(request.form['filesLeft']) - 1
         app.logger.warning(files_left)
         filename = file.filename
         image = Image.open(file)
-
         p = Path('./NemoModel/Images/ImagesToRun/' + filename)
         image.save(p)
+        # Run Nemo Model Once all Images Have Arrived
         if files_left < 1:
             run_nemo()
             path = os.path.abspath('results.zip')
@@ -39,9 +40,8 @@ def run_nemo():
                       "--resume", "./NemoModel/Nemo-DETR-dg.pth",
                       "--output_dir", "./NemoModel/Images/ProcessedImages/",
                       "--device", "cpu", "--disp", "1"]).wait()
-    zip_file = get_processed_images()
+    get_processed_images()
     clean_up_nemo_run()
-    return zip_file
 
 
 def get_processed_images():
