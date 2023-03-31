@@ -42,11 +42,11 @@ def run_nemo():
                     "--output_dir", "./ProcessedImages/", 
                     "--device" , "cpu", "--disp" ,"1"]).wait()
     zipFile = GetProcessedImages()
-    CleanUpNemorun()
+    CleanUpNemoRun()
     return zipFile
     
 
-def get_processed_images():
+def GetProcessedImages():
     """ Function to append processed Nemo files to an array. """
     print("Getting Nemo Results")
     processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
@@ -59,7 +59,7 @@ def get_processed_images():
         #app.logger.warning(fileName)
     zipFileToSend.close()
 
-def clean_up_nemo_run():
+def CleanUpNemoRun():
     """Function to clean up files for Nemo to run again. """
     print("Cleaning up Nemo Run")
     processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
