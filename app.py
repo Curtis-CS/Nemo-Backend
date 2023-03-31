@@ -5,31 +5,36 @@ import subprocess
 import os
 from pathlib import Path
 import zipfile
+
 app = Flask(__name__)
 CORS(app)
+
 
 @app.route("/", methods=['POST'])
 def process_image():
     if request.method == "POST":
+        # Receive Single File
         file = request.files['file']
-        filesLeft = int(request.form['filesLeft']) - 1
-        app.logger.warning(filesLeft)
+        files_left = int(request.form['filesLeft']) - 1
+        app.logger.warning(files_left)
         filename = file.filename
         image = Image.open(file)
 
         p = Path('./ImagesToRun/' + filename)
         image.save(p)
-        if (filesLeft < 1):
-            RunNemo()
+        # Run Nemo Model Once all Images Have Arrived
+        if files_left < 1:
+            run_nemo()
             path = os.path.abspath('results.zip')
-            #app.logger.warning(path)
-            #app.logger.warning(os.path.getsize(path))
+            # app.logger.warning(path)
+            # app.logger.warning(os.path.getsize(path))
             return send_file(path, mimetype='application/zip')
         return 'null'
 
+
 # Run Nemo
-def RunNemo():
-    print ("Running Nemo")
+def run_nemo():
+    print("Running Nemo")
     print("In Testing Nemo")
     subprocess.Popen(["python3", "./NemoModel/detr/test.py", 
                     "--data_path", "./ImagesToRun/", 
@@ -41,8 +46,8 @@ def RunNemo():
     return zipFile
     
 
-#Function to get all of the files Nemo Processed into an array
-def GetProcessedImages():
+def get_processed_images():
+    """ Function to append processed Nemo files to an array. """
     print("Getting Nemo Results")
     processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
     filesToSendBack = []
@@ -54,8 +59,8 @@ def GetProcessedImages():
         #app.logger.warning(fileName)
     zipFileToSend.close()
 
-#Function to clean up the files so Nemo can run smoothly again
-def CleanUpNemorun():
+def clean_up_nemo_run():
+    """Function to clean up files for Nemo to run again. """
     print("Cleaning up Nemo Run")
     processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
     for file in os.listdir(processedImagesDir):
