@@ -17,7 +17,7 @@ def process_image():
         filename = file.filename
         image = Image.open(file)
 
-        p = Path('./NemoModel/Images/ImagesToRun/' + filename)
+        p = Path('./ImagesToRun/' + filename)
         image.save(p)
         if (filesLeft < 1):
             RunNemo()
@@ -32,9 +32,9 @@ def RunNemo():
     print ("Running Nemo")
     print("In Testing Nemo")
     subprocess.Popen(["python3", "./NemoModel/detr/test.py", 
-                    "--data_path", "./NemoModel/Images/ImagesToRun/", 
+                    "--data_path", "./ImagesToRun/", 
                     "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
-                    "--output_dir", "./NemoModel/Images/ProcessedImages/", 
+                    "--output_dir", "./ProcessedImages/", 
                     "--device" , "cpu", "--disp" ,"1"]).wait()
     zipFile = GetProcessedImages()
     CleanUpNemorun()
@@ -44,7 +44,7 @@ def RunNemo():
 #Function to get all of the files Nemo Processed into an array
 def GetProcessedImages():
     print("Getting Nemo Results")
-    processedImagesDir = './NemoModel/Images/ProcessedImages/Inferences-ImagesToRun'
+    processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
     filesToSendBack = []
     for file in os.listdir(processedImagesDir):
         filesToSendBack.append(os.path.join(processedImagesDir, file))
@@ -57,10 +57,10 @@ def GetProcessedImages():
 #Function to clean up the files so Nemo can run smoothly again
 def CleanUpNemorun():
     print("Cleaning up Nemo Run")
-    processedImagesDir = './NemoModel/Images/ProcessedImages/Inferences-ImagesToRun'
+    processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
     for file in os.listdir(processedImagesDir):
         os.remove(os.path.join(processedImagesDir, file))
-    imagesToRunDir = './NemoModel/Images/ImagesToRun'
+    imagesToRunDir = './ImagesToRun'
     for file in os.listdir(imagesToRunDir):
         os.remove(os.path.join(imagesToRunDir, file))
 
