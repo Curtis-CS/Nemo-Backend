@@ -16,15 +16,26 @@ def process_image():
         # Receive Single File
         file = request.files['file']
         files_left = int(request.form['filesLeft']) - 1
+        run_type = request.form['runType']
         app.logger.warning(files_left)
         filename = file.filename
         image = Image.open(file)
 
         p = Path('./ImagesToRun/' + filename)
         image.save(p)
+
+        print("RUN TYPE= ", run_type)
+
         # Run Nemo Model Once all Images Have Arrived
         if files_left < 1:
-            run_nemo()
+            if (run_type):
+                print("SINGLE CLASS RUN")
+                run_nemo_single()
+
+            else:
+                print("DENSITY CLASS RUN")
+                run_nemo_density()
+            
             path = os.path.abspath('results.zip')
             # app.logger.warning(path)
             # app.logger.warning(os.path.getsize(path))
@@ -33,7 +44,7 @@ def process_image():
 
 
 # Run Nemo
-def run_nemo():
+def run_nemo_density():
     print("Running Nemo")
     print("In Testing Nemo")
     subprocess.Popen(["python3", "./NemoModel/detr/test.py", 
@@ -41,6 +52,18 @@ def run_nemo():
                     "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
                     "--output_dir", "./ProcessedImages/", 
                     "--device" , "cpu", "--disp" ,"1"]).wait()
+    zipFile = GetProcessedImages()
+    CleanUpNemoRun()
+    return zipFile
+
+def run_nemo_single():
+    print("Running Nemo")
+    print("In Testing Nemo")
+    subprocess.Popen(["python3", "./NemoModel/detr/test.py", 
+                    "--data_path", "./ImagesToRun/", 
+                    "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
+                    "--output_dir", "./ProcessedImages/", 
+                    "--device" , "cpu","--num_cl", "2", "--disp" ,"1"]).wait()
     zipFile = GetProcessedImages()
     CleanUpNemoRun()
     return zipFile
