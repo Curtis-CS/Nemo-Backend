@@ -52,9 +52,8 @@ def run_nemo_density():
                     "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
                     "--output_dir", "./ProcessedImages/", 
                     "--device" , "cpu", "--disp" ,"1"]).wait()
-    zipFile = GetProcessedImages()
+    GetProcessedImages()
     CleanUpNemoRun()
-    return zipFile
 
 def run_nemo_single():
     print("Running Nemo")
@@ -64,9 +63,8 @@ def run_nemo_single():
                     "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
                     "--output_dir", "./ProcessedImages/", 
                     "--device" , "cpu","--num_cl", "2", "--disp" ,"1"]).wait()
-    zipFile = GetProcessedImages()
+    GetProcessedImages()
     CleanUpNemoRun()
-    return zipFile
     
 
 def GetProcessedImages():
