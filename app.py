@@ -28,14 +28,14 @@ def process_image():
 
         # Run Nemo Model Once all Images Have Arrived
         if files_left < 1:
-            if (run_type):
+            if run_type:
                 print("SINGLE CLASS RUN")
                 run_nemo_single()
 
             else:
                 print("DENSITY CLASS RUN")
                 run_nemo_density()
-            
+
             path = os.path.abspath('results.zip')
             # app.logger.warning(path)
             # app.logger.warning(os.path.getsize(path))
@@ -47,48 +47,51 @@ def process_image():
 def run_nemo_density():
     print("Running Nemo")
     print("In Testing Nemo")
-    subprocess.Popen(["python3", "./NemoModel/detr/test.py", 
-                    "--data_path", "./ImagesToRun/", 
-                    "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
-                    "--output_dir", "./ProcessedImages/", 
-                    "--device" , "cpu", "--disp" ,"1"]).wait()
-    GetProcessedImages()
-    CleanUpNemoRun()
+    subprocess.Popen(["python3", "./NemoModel/detr/test.py",
+                      "--data_path", "./ImagesToRun/",
+                      "--resume", "./NemoModel/Nemo-DETR-dg.pth",
+                      "--output_dir", "./ProcessedImages/",
+                      "--device", "cpu", "--disp", "1"]).wait()
+    get_processed_images()
+    clean_up_nemo_run()
+
 
 def run_nemo_single():
     print("Running Nemo")
     print("In Testing Nemo")
-    subprocess.Popen(["python3", "./NemoModel/detr/test.py", 
-                    "--data_path", "./ImagesToRun/", 
-                    "--resume", "./NemoModel/Nemo-DETR-dg.pth", 
-                    "--output_dir", "./ProcessedImages/", 
-                    "--device" , "cpu","--num_cl", "2", "--disp" ,"1"]).wait()
-    GetProcessedImages()
-    CleanUpNemoRun()
-    
+    subprocess.Popen(["python3", "./NemoModel/detr/test.py",
+                      "--data_path", "./ImagesToRun/",
+                      "--resume", "./NemoModel/Nemo-DETR-dg.pth",
+                      "--output_dir", "./ProcessedImages/",
+                      "--device", "cpu", "--num_cl", "2", "--disp", "1"]).wait()
+    get_processed_images()
+    clean_up_nemo_run()
 
-def GetProcessedImages():
+
+def get_processed_images():
     """ Function to append processed Nemo files to an array. """
     print("Getting Nemo Results")
-    processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
-    filesToSendBack = []
-    for file in os.listdir(processedImagesDir):
-        filesToSendBack.append(os.path.join(processedImagesDir, file))
-    zipFileToSend = zipfile.ZipFile('results.zip', 'w')
-    for fileName in filesToSendBack:
-        zipFileToSend.write(fileName)
-        #app.logger.warning(fileName)
-    zipFileToSend.close()
+    processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
+    files_to_send_back = []
+    for file in os.listdir(processed_images_dir):
+        files_to_send_back.append(os.path.join(processed_images_dir, file))
+    zip_file_to_send = zipfile.ZipFile('results.zip', 'w')
+    for fileName in files_to_send_back:
+        zip_file_to_send.write(fileName)
+        # app.logger.warning(fileName)
+    zip_file_to_send.close()
 
-def CleanUpNemoRun():
-    """Function to clean up files for Nemo to run again. """
+
+def clean_up_nemo_run():
+    """ Function to clean up files for Nemo to run again. """
     print("Cleaning up Nemo Run")
-    processedImagesDir = './ProcessedImages/Inferences-ImagesToRun'
-    for file in os.listdir(processedImagesDir):
-        os.remove(os.path.join(processedImagesDir, file))
-    imagesToRunDir = './ImagesToRun'
-    for file in os.listdir(imagesToRunDir):
-        os.remove(os.path.join(imagesToRunDir, file))
+    processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
+    for file in os.listdir(processed_images_dir):
+        os.remove(os.path.join(processed_images_dir, file))
+    images_to_run_dir = './ImagesToRun'
+    for file in os.listdir(images_to_run_dir):
+        os.remove(os.path.join(images_to_run_dir, file))
+
 
 if __name__ == "__main__":
     app.run(debug=True)
