@@ -39,6 +39,7 @@ def rescale_bboxes(out_bbox, size):
                           ], dtype=torch.float32)
     return b
 
+#Curits Note: Manually set img_files array to our own
 def get_images(in_path):
     img_files = []
     for (dirpath, dirnames, filenames) in os.walk(in_path):
@@ -494,7 +495,7 @@ def infer(images_path, model, postprocessors, device, output_path):
             #writer.writerow(infer_header)
             writer.writerow(infer_data)
 
-
+#MAIN FUNCTION, we should be able to alter the args here manually or in the parser--Curtis
 if __name__ == "__main__":
     parser = argparse.ArgumentParser('DETR training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
@@ -507,7 +508,10 @@ if __name__ == "__main__":
         cargs = checkpoint['args']
         cepoch = checkpoint['epoch']
         args.num_cl, args.num_queries, args.batch_size = cargs.num_cl, cargs.num_queries, cargs.batch_size
-
+    print("DISP_ATTN: ", args.disp_attn)
+    print("IOU_THRESH: ", args.iou_thresh)
+    print("NMSUP: ", args.nmsup)
+    print("Num of Classes: ", args.num_cl)
     model, _, postprocessors = build_model(args)
     if args.resume and not args.detr_base:
         model.load_state_dict(checkpoint['model'])
@@ -525,8 +529,10 @@ if __name__ == "__main__":
         #model = detrdict["model"]
         model.load_state_dict(detrdict['model'])
 
-
+    print("DISP_ATTN: ", args.disp_attn)
+    print("IOU_THRESH: ", args.iou_thresh)
+    print("NMSUP: ", args.nmsup)
+    print("Num of Classes: ", args.num_cl)
     model.to(device)
     image_paths = get_images(args.data_path)
-
     infer(image_paths, model, postprocessors, device, output_dir)

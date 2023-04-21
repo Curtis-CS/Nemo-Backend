@@ -9,6 +9,12 @@ import zipfile
 app = Flask(__name__)
 CORS(app)
 
+#set 1 to plot encoder-decoder attention weights---default values
+disp_attention = 0
+#apply non-max suppression to bounding boxes---default values
+nmsup = .25
+#threshold for non-max suppression---default valuesw
+iou_threshold = .2
 
 @app.route("/", methods=['POST'])
 def process_image():
@@ -28,7 +34,7 @@ def process_image():
 
         # Run Nemo Model Once all Images Have Arrived
         if files_left < 1:
-            if run_type:
+            if (run_type == True):
                 print("SINGLE CLASS RUN")
                 run_nemo_single()
 
@@ -46,24 +52,25 @@ def process_image():
 # Run Nemo
 def run_nemo_density():
     print("Running Nemo")
-    print("In Testing Nemo")
+    print(disp_attention)
     subprocess.Popen(["python3", "./NemoModel/detr/test.py",
                       "--data_path", "./ImagesToRun/",
                       "--resume", "./NemoModel/Nemo-DETR-dg.pth",
                       "--output_dir", "./ProcessedImages/",
-                      "--device", "cpu", "--disp", "1"]).wait()
+                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention), 
+                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)]).wait()
     get_processed_images()
     clean_up_nemo_run()
 
 
 def run_nemo_single():
     print("Running Nemo")
-    print("In Testing Nemo")
     subprocess.Popen(["python3", "./NemoModel/detr/test.py",
                       "--data_path", "./ImagesToRun/",
                       "--resume", "./NemoModel/Nemo-DETR-dg.pth",
                       "--output_dir", "./ProcessedImages/",
-                      "--device", "cpu", "--num_cl", "2", "--disp", "1"]).wait()
+                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention), 
+                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)]).wait()
     get_processed_images()
     clean_up_nemo_run()
 
