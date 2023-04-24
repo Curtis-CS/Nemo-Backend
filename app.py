@@ -41,6 +41,7 @@ def process_image():
 
         # Run Nemo Model Once all Images Have Arrived
         if (files_left < 1):
+            get_frames('20160604-FIRE-smer-tcs3-mobo-c.mp4', 'mp4split', 1, 30)
             if (run_type == True):
                 print("SINGLE CLASS RUN")
                 run_nemo_single(disp_attention, nmsup, iou_threshold)
