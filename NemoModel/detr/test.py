@@ -508,10 +508,10 @@ if __name__ == "__main__":
         cargs = checkpoint['args']
         cepoch = checkpoint['epoch']
         args.num_cl, args.num_queries, args.batch_size = cargs.num_cl, cargs.num_queries, cargs.batch_size
-    print("DISP_ATTN: ", args.disp_attn)
-    print("IOU_THRESH: ", args.iou_thresh)
-    print("NMSUP: ", args.nmsup)
-    print("Num of Classes: ", args.num_cl)
+    # print("DISP_ATTN: ", args.disp_attn)
+    # print("IOU_THRESH: ", args.iou_thresh)
+    # print("NMSUP: ", args.nmsup)
+    # print("Num of Classes: ", args.num_cl)
     model, _, postprocessors = build_model(args)
     if args.resume and not args.detr_base:
         model.load_state_dict(checkpoint['model'])
@@ -529,10 +529,10 @@ if __name__ == "__main__":
         #model = detrdict["model"]
         model.load_state_dict(detrdict['model'])
 
-    print("DISP_ATTN: ", args.disp_attn)
-    print("IOU_THRESH: ", args.iou_thresh)
-    print("NMSUP: ", args.nmsup)
-    print("Num of Classes: ", args.num_cl)
+    # print("DISP_ATTN: ", args.disp_attn)
+    # print("IOU_THRESH: ", args.iou_thresh)
+    # print("NMSUP: ", args.nmsup)
+    # print("Num of Classes: ", args.num_cl)
     model.to(device)
     image_paths = get_images(args.data_path)
     infer(image_paths, model, postprocessors, device, output_dir)
