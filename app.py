@@ -232,6 +232,15 @@ def get_frames(input_file, output_folder, step, count):
 
     # reading the number of frames at that particular second
     fps = cap.get(cv2.CAP_PROP_FPS)
+    length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+    videoLengthSeconds = length / fps
+    if (videoLengthSeconds > 60):
+        print("Long: ", videoLengthSeconds)
+    else:
+        print("Short: ", videoLengthSeconds)
+        # count = 30
+        # step = videoLengthSeconds / count
+
 
     while True:
         ret, frame = cap.read()
@@ -262,7 +271,7 @@ def get_frames(input_file, output_folder, step, count):
 def CheckFileType(filename):
     splitType = filename.split(".")
     type = splitType[1]
-    print(type)
+    #print(type)
     if (type == "mp4"):
         return True
     else:
@@ -287,16 +296,16 @@ def CreateGIF(dir):
         image = Image.open(file_name)
         image = image.resize((width, height))
         image_list.append(image)
-        print(image.size)
+        #print(image.size)
     #print(image_file_names)
     # specify the name and file format of the output GIF
-    output_file_name = 'output.gif'
+    output_file_name = dir + ".gif"
 
     # specify the duration of each frame in milliseconds
-    duration = 100
+    duration = 300
 
     # use Pillow to save the list of images as a GIF
-    image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", "Video.gif"), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
+    image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
 
 if __name__ == "__main__":
     app.run(debug=True)
