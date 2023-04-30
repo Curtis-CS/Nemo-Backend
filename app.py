@@ -9,6 +9,8 @@ import cv2
 import shutil
 import glob
 
+import time
+
 app = Flask(__name__)
 CORS(app)
 
@@ -102,6 +104,7 @@ def run_nemo_density(disp_attention, nmsup, iou_threshold, imagesToRun):
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)])  # .wait()
+    time.sleep(10)
     get_processed_images(disp_attention, nmsup, iou_threshold)
     clean_up_nemo_run(disp_attention, nmsup, iou_threshold)
 
@@ -114,6 +117,7 @@ def run_nemo_single(disp_attention, nmsup, iou_threshold, imagesToRun):
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)])  # .wait()
+    time.sleep(10)
     get_processed_images(disp_attention, nmsup, iou_threshold)
     clean_up_nemo_run(disp_attention, nmsup, iou_threshold)
 
@@ -153,10 +157,6 @@ def get_processed_images(disp_attention, nmsup, iou_threshold):
                         #print("With detected file: ", os.path.join(processed_images_dir[2:], detectFile))
                         os.replace(os.path.join(processed_images_dir[2:], detectFile), os.path.join(dir, file))
             CreateGIF(dir)
-
-
-    for name in files_to_send_back:
-        print(name)
     print("Getting Nemo Results")
     if (disp_attention == 0):
         processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
