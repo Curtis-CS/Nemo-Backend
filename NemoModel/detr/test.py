@@ -5,14 +5,14 @@ Train and eval functions used in main.py
 import math
 import os
 import csv
-#import cv2
+# import cv2
 import sys
 import argparse
 from pathlib import Path
 from typing import Iterable
 from PIL import Image, ImageFont, ImageDraw
 import numpy as np
-from torchvision.ops import nms #adding nms to refine overlapping bboxes
+from torchvision.ops import nms  # adding nms to refine overlapping bboxes
 
 import torch
 
@@ -31,6 +31,7 @@ def box_cxcywh_to_xyxy(x):
          (x_c + 0.5 * w), (y_c + 0.5 * h)]
     return torch.stack(b, dim=1)
 
+
 def rescale_bboxes(out_bbox, size):
     img_w, img_h = size
     b = box_cxcywh_to_xyxy(out_bbox)
@@ -39,7 +40,8 @@ def rescale_bboxes(out_bbox, size):
                           ], dtype=torch.float32)
     return b
 
-#Curits Note: Manually set img_files array to our own
+
+# Curits Note: Manually set img_files array to our own
 def get_images(in_path):
     img_files = []
     for (dirpath, dirnames, filenames) in os.walk(in_path):
@@ -47,7 +49,7 @@ def get_images(in_path):
         for file in filenames:
             filename, ext = os.path.splitext(file)
             ext = str.lower(ext)
-            if ext == '.jpg' or ext == '.jpeg' or ext == '.gif' or ext == '.png' or ext == '.pgm': #[put for video]
+            if ext == '.jpg' or ext == '.jpeg' or ext == '.gif' or ext == '.png' or ext == '.pgm':  # [put for video]
                 img_files.append(os.path.join(dirpath, file))
 
     return img_files
@@ -129,8 +131,8 @@ def get_args_parser():
 
     parser.add_argument('--thresh', default=0.5, type=float)
     parser.add_argument('--num_cl', default=4, type=int)
-    parser.add_argument('--disp', default=0, type=int) #set 1 to plot and save
-    parser.add_argument('--disp_attn', default=0, type=int) #set 1 to plot encoder-decoder attention weights
+    parser.add_argument('--disp', default=0, type=int)  # set 1 to plot and save
+    parser.add_argument('--disp_attn', default=0, type=int)  # set 1 to plot encoder-decoder attention weights
 
     parser.add_argument('--nmsup', default=0.25,
                         help='apply non-max suppression to bounding boxes', type=float)
@@ -139,47 +141,46 @@ def get_args_parser():
     parser.add_argument('--dummy', default=0, help='dummy class category_id to be ignored', type=float)
     parser.add_argument('--mode', default=2, type=int,
                         help='0:print only if smoke detected, 1:print only if no smoke, 2:print all')
-                        
 
     return parser
 
-#plot_attn(h,w,bboxes_scaled,probas,img,dec_attn_weights, keep, figsave_path) # probas[keep] --> probask
 
-def plot_attn(h,w, bboxes_scaled, probas, im, dec_attn_weights, keep,img_name):
+# plot_attn(h,w,bboxes_scaled,probas,img,dec_attn_weights, keep, figsave_path) # probas[keep] --> probask
+
+def plot_attn(h, w, bboxes_scaled, probas, im, dec_attn_weights, keep, img_name):
     COLORS = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
-          [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
-    #CLASSES= [ 'N/A', 'smoke']
+              [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
+    # CLASSES= [ 'N/A', 'smoke']
 
     if args.num_cl == 2:
         CLASSES = [
-        'N/A','smoke'
+            'N/A', 'smoke'
         ]
-        #title1 = 'NEmo' +maxIOU
+        # title1 = 'NEmo' +maxIOU
         title1 = 'Nemo-detr-sc'
     elif args.num_cl == 4:
         CLASSES = [
-        'N/A', 'low', 'mid', 'high'
+            'N/A', 'low', 'mid', 'high'
         ]
         title1 = 'Nemo-detr-d'
-    elif args.num_cl == 5 and args.dummy==4 :
+    elif args.num_cl == 5 and args.dummy == 4:
         CLASSES = [
-        'N/A', 'low', 'mid', 'high', 'no-smoke', 'N/A'
+            'N/A', 'low', 'mid', 'high', 'no-smoke', 'N/A'
         ]
         title1 = 'Nemo-detr-dda'
-    elif args.num_cl == 8 and args.dummy==7 :
+    elif args.num_cl == 8 and args.dummy == 7:
         CLASSES = [
-        'N/A', 'low', 'N/A', 'mid', 'N/A' , 'high', 'N/A' ,'no-smoke'
+            'N/A', 'low', 'N/A', 'mid', 'N/A', 'high', 'N/A', 'no-smoke'
         ]
         title1 = 'Nemo-detr-dda'
     elif args.num_cl == 6:
         CLASSES = [
-        'N/A', 'low', 'N/A', 'mid', 'N/A' , 'high'
+            'N/A', 'low', 'N/A', 'mid', 'N/A', 'high'
         ]
         title1 = 'Nemo-detr-dg'
-        #title1 = 'Nemo-density'
+        # title1 = 'Nemo-density'
 
-
-    fig, axs = plt.subplots(ncols=len(bboxes_scaled), nrows=2, figsize=(22, 7),squeeze=False)
+    fig, axs = plt.subplots(ncols=len(bboxes_scaled), nrows=2, figsize=(22, 7), squeeze=False)
     colors = COLORS * 100
     for idx, ax_i, (xmin, ymin, xmax, ymax) in zip(keep.nonzero(), axs.T, bboxes_scaled):
         ax = ax_i[0]
@@ -189,53 +190,52 @@ def plot_attn(h,w, bboxes_scaled, probas, im, dec_attn_weights, keep,img_name):
         ax = ax_i[1]
         ax.imshow(im)
         ax.add_patch(plt.Rectangle((xmin, ymin), xmax - xmin, ymax - ymin,
-                                fill=False, color='blue', linewidth=3))
+                                   fill=False, color='blue', linewidth=3))
         ax.axis('off')
         ax.set_title(CLASSES[probas[idx].argmax()])
     fig.tight_layout()
 
     plt.gca().set_axis_off()
-    plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace=0)
-    plt.margins(0,0)
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+    plt.margins(0, 0)
     plt.gca().xaxis.set_major_locator(plt.NullLocator())
     plt.gca().yaxis.set_major_locator(plt.NullLocator())
 
-    fig.savefig(img_name,bbox_inches = 'tight', pad_inches = 0)
+    fig.savefig(img_name, bbox_inches='tight', pad_inches=0)
     plt.close()
 
 
-
-def plot_results(pil_img, prob, boxes,img_name):
+def plot_results(pil_img, prob, boxes, img_name):
     COLORS = [[0.000, 0.447, 0.741], [0.850, 0.325, 0.098], [0.929, 0.694, 0.125],
-          [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
+              [0.494, 0.184, 0.556], [0.466, 0.674, 0.188], [0.301, 0.745, 0.933]]
     title1 = 'Nemo'
 
     # TODO: After Python 3.10 : We can use match case instead of lot of nested ifs
     if args.num_cl == 2:
         CLASSES = [
-        'N/A','smoke'
+            'N/A', 'smoke'
         ]
         title1 = 'Nemo-detr-sc'
     elif args.num_cl == 4:
         CLASSES = [
-        'N/A', 'low', 'mid', 'high'
+            'N/A', 'low', 'mid', 'high'
         ]
         title1 = 'Nemo-detr-d'
-    elif args.num_cl == 5 and args.dummy==4 :
+    elif args.num_cl == 5 and args.dummy == 4:
         CLASSES = [
-        'N/A', 'low', 'mid', 'high', 'no-smoke', 'N/A'
+            'N/A', 'low', 'mid', 'high', 'no-smoke', 'N/A'
         ]
         title1 = 'Nemo-detr-dda'
-    elif args.num_cl == 8 and args.dummy==7 :
+    elif args.num_cl == 8 and args.dummy == 7:
         CLASSES = [
-        'N/A', 'low', 'N/A', 'mid', 'N/A' , 'high', 'N/A' ,'no-smoke'
+            'N/A', 'low', 'N/A', 'mid', 'N/A', 'high', 'N/A', 'no-smoke'
         ]
         title1 = 'Nemo-detr-dda'
     elif args.num_cl == 6:
         CLASSES = [
-        'N/A', 'low', 'N/A', 'mid', 'N/A' , 'high'
+            'N/A', 'low', 'N/A', 'mid', 'N/A', 'high'
         ]
-        #title1 = 'Nemo-detr-dg'
+        # title1 = 'Nemo-detr-dg'
         title1 = 'Nemo_density-detector'
     else:
         CLASSES = [
@@ -257,13 +257,12 @@ def plot_results(pil_img, prob, boxes,img_name):
         title1 = 'DETR-R101'
 
     title2 = os.path.basename(img_name)
-    fs = 40 #font size
-    colr='cyan' 
-    #colr='#FF7FFF' #F691FF #EC6FFF
+    fs = 40  # font size
+    colr = 'cyan'
+    # colr='#FF7FFF' #F691FF #EC6FFF
 
-
-    h,w,_ = pil_img.shape    
-    plt.figure(figsize=(16,10))
+    h, w, _ = pil_img.shape
+    plt.figure(figsize=(16, 10))
     plt.imshow(pil_img)
     ax = plt.gca()
     for p, (xmin, ymin, xmax, ymax), c in zip(prob, boxes.tolist(), COLORS * 100):
@@ -273,53 +272,53 @@ def plot_results(pil_img, prob, boxes,img_name):
                                    fill=False, color=colr, linewidth=4))
         cl = p.argmax()
         text = f'{CLASSES[cl]}: {p[cl]:0.2f}'
-        #text = f'{p[cl]:0.2f}'
-        #bb = text.get_window_extent(renderer=r)
+        # text = f'{p[cl]:0.2f}'
+        # bb = text.get_window_extent(renderer=r)
 
-        #ax.text(xmin, ymin, text, fontsize=28,
-                #bbox=dict(facecolor=colr, alpha=0.45))
-        #ax.text(xmax - 222, ymax+45, text, fontsize=28,
-                #bbox=dict(facecolor=colr, alpha=0.45))
+        # ax.text(xmin, ymin, text, fontsize=28,
+        # bbox=dict(facecolor=colr, alpha=0.45))
+        # ax.text(xmax - 222, ymax+45, text, fontsize=28,
+        # bbox=dict(facecolor=colr, alpha=0.45))
         ax.text(xmax, ymax, text, fontsize=28,
-                bbox=dict(facecolor=colr, alpha=0.45),horizontalalignment='right',verticalalignment='top')
+                bbox=dict(facecolor=colr, alpha=0.45), horizontalalignment='right', verticalalignment='top')
 
-    #ax.text(w*0.993,h*0.01, title1,fontsize=fs,bbox=dict(facecolor=colr,alpha=0.85),horizontalalignment='right',verticalalignment='top')
-    ax.text(w*0.5,h*0.01, title1,fontsize=fs,bbox=dict(facecolor=colr,alpha=0.85),horizontalalignment='center',verticalalignment='top')
+    # ax.text(w*0.993,h*0.01, title1,fontsize=fs,bbox=dict(facecolor=colr,alpha=0.85),horizontalalignment='right',verticalalignment='top')
+    ax.text(w * 0.5, h * 0.01, title1, fontsize=fs, bbox=dict(facecolor=colr, alpha=0.85), horizontalalignment='center',
+            verticalalignment='top')
 
-    #ax.set_title(title2,fontsize=16,y=-0.05)
+    # ax.set_title(title2,fontsize=16,y=-0.05)
 
     plt.gca().set_axis_off()
-    plt.subplots_adjust(top = 1, bottom = 0, right = 1, left = 0, hspace = 0, wspace=0)
-    plt.margins(0,0)
+    plt.subplots_adjust(top=1, bottom=0, right=1, left=0, hspace=0, wspace=0)
+    plt.margins(0, 0)
     plt.gca().xaxis.set_major_locator(plt.NullLocator())
     plt.gca().yaxis.set_major_locator(plt.NullLocator())
 
     plt.axis('off')
-    plt.savefig(img_name,bbox_inches = 'tight', pad_inches = 0)
-    #plt.show()
+    plt.savefig(img_name, bbox_inches='tight', pad_inches=0)
+    # plt.show()
     plt.close()
 
-    
+
 @torch.no_grad()
 def infer(images_path, model, postprocessors, device, output_path):
     model.eval()
-    dummy_class=args.dummy   # a new class to include non-smoke images. The training for this class is 
-                    #positioned at bbox [0,0,1,1] xmin,ymin,w,h
+    dummy_class = args.dummy  # a new class to include non-smoke images. The training for this class is
+    # positioned at bbox [0,0,1,1] xmin,ymin,w,h
 
-    #loaded_model = os.path.basename(args.resume)
-    #import pdb; pdb.set_trace();
+    # loaded_model = os.path.basename(args.resume)
+    # import pdb; pdb.set_trace();
 
     loaded_images = os.path.basename(os.path.normpath(args.data_path))
-    infer_dir="Inferences-{}".format(loaded_images)
-
+    infer_dir = "Inferences-{}".format(loaded_images)
 
     if args.resume:
         loaded_model = os.path.basename(args.resume)
 
-    if args.disp: #save inferences
+    if args.disp:  # save inferences
         (output_path / infer_dir).mkdir(exist_ok=True)
 
-    if args.disp_attn: #save inferences
+    if args.disp_attn:  # save inferences
         (output_path / 'Attn_viz').mkdir(exist_ok=True)
 
     duration = 0
@@ -328,24 +327,23 @@ def infer(images_path, model, postprocessors, device, output_path):
     v = args.mode
     print("Inferring {} images.".format(len(images_path)))
     for img_sample in images_path:
-        counter +=1
+        counter += 1
         filename = os.path.basename(img_sample)
-        if v==2:
+        if v == 2:
             print("processing...{}".format(filename))
 
-        filename = filename.replace('jpeg','').replace('.jpg','').replace(';','-').replace(' ','_')
+        filename = filename.replace('jpeg', '').replace('.jpg', '').replace(';', '-').replace(' ', '_')
         if args.disp:
-            figsave_path = output_path / infer_dir / ('nemo_'+filename+'.png')
+            figsave_path = output_path / infer_dir / ('nemo_' + filename + '.png')
         if args.disp_attn:
-            figsave_path_attn = output_path / "Attn_viz" / ('attn_nemo_'+filename+'.png')
+            figsave_path_attn = output_path / "Attn_viz" / ('attn_nemo_' + filename + '.png')
         orig_image = Image.open(img_sample)
         w, h = orig_image.size
-        #img4=orig_image.copy()
-        #import pdb; pdb.set_trace()
-        #if img4.mode=='RGBA':
-            #img = cv2.cvtColor(img4,cv2.COLOR_BGRA2BGR)
-            #orig_image = img4.copy()
-
+        # img4=orig_image.copy()
+        # import pdb; pdb.set_trace()
+        # if img4.mode=='RGBA':
+        # img = cv2.cvtColor(img4,cv2.COLOR_BGRA2BGR)
+        # orig_image = img4.copy()
 
         transform = make_face_transforms("val")
         dummy_target = {
@@ -356,19 +354,18 @@ def infer(images_path, model, postprocessors, device, output_path):
         image = image.unsqueeze(0)
         image = image.to(device)
 
-
         conv_features, enc_attn_weights, dec_attn_weights = [], [], []
         hooks = [
             model.backbone[-2].register_forward_hook(
-                        lambda self, input, output: conv_features.append(output)
+                lambda self, input, output: conv_features.append(output)
 
             ),
             model.transformer.encoder.layers[-1].self_attn.register_forward_hook(
-                        lambda self, input, output: enc_attn_weights.append(output[1])
+                lambda self, input, output: enc_attn_weights.append(output[1])
 
             ),
             model.transformer.decoder.layers[-1].multihead_attn.register_forward_hook(
-                        lambda self, input, output: dec_attn_weights.append(output[1])
+                lambda self, input, output: dec_attn_weights.append(output[1])
 
             ),
 
@@ -388,12 +385,12 @@ def infer(images_path, model, postprocessors, device, output_path):
         bboxes_scaled = rescale_bboxes(outputs['pred_boxes'][0, keep], orig_image.size)
 
         if len(bboxes_scaled) == 0:
-            if v>=1:
+            if v >= 1:
                 print("no-smoke:  {}".format(filename))
-            #print("no-smoke:  {}".format(filename))
+            # print("no-smoke:  {}".format(filename))
             continue
 
-        #import pdb; pdb.set_trace();
+        # import pdb; pdb.set_trace();
 
         for hook in hooks:
             hook.remove()
@@ -404,46 +401,46 @@ def infer(images_path, model, postprocessors, device, output_path):
 
         # get the feature map shape
         h, w = conv_features['0'].tensors.shape[-2:]
-        #import pdb; pdb.set_trace();
+        # import pdb; pdb.set_trace();
 
         if args.disp_attn:
-            plot_attn(h,w,bboxes_scaled,probas, orig_image ,dec_attn_weights, keep, figsave_path_attn)
+            plot_attn(h, w, bboxes_scaled, probas, orig_image, dec_attn_weights, keep, figsave_path_attn)
 
-        if dummy_class: # if prediction is the dummy class it means no-smoke, we remove the dummy boxes
-            #print("dummy class: %d",dummy_class)
+        if dummy_class:  # if prediction is the dummy class it means no-smoke, we remove the dummy boxes
+            # print("dummy class: %d",dummy_class)
             dummy_catid = dummy_class
-            keep2= probas.max(-1).indices != dummy_catid #
-            keep1 = torch.logical_and(keep,keep2)
-            if(len(keep)!=len(keep2)):
-                print("remvoing {} dummy bboxes".format(len(keep)-len(keep2)))
+            keep2 = probas.max(-1).indices != dummy_catid  #
+            keep1 = torch.logical_and(keep, keep2)
+            if (len(keep) != len(keep2)):
+                print("remvoing {} dummy bboxes".format(len(keep) - len(keep2)))
             keep = keep1
-        
+
         bboxes_scaled = rescale_bboxes(outputs['pred_boxes'][0, keep], orig_image.size)
-        #probas = probas[keep].cpu().data.numpy()
+        # probas = probas[keep].cpu().data.numpy()
         probask = probas[keep]
 
         if len(bboxes_scaled) == 0:
-            if v>=1:
+            if v >= 1:
                 print("no-smoke:  {}".format(filename))
-            #print("no-smoke:  {}".format(filename))
+            # print("no-smoke:  {}".format(filename))
             continue
-        #import pdb; pdb.set_trace();
-        #there was a detection
+        # import pdb; pdb.set_trace();
+        # there was a detection
         has_smoke += 1
-        if v!=1: #display if v=2 or when we are predictint non-smoke images
-            print("[{}/{}] [{:.2f}%]".format(has_smoke,counter,(has_smoke/counter)*100))
-        #print("[{}/{}] [{:.2f}%]".format(has_smoke,counter,(has_smoke/counter)*100))
+        if v != 1:  # display if v=2 or when we are predictint non-smoke images
+            print("[{}/{}] [{:.2f}%]".format(has_smoke, counter, (has_smoke / counter) * 100))
+        # print("[{}/{}] [{:.2f}%]".format(has_smoke,counter,(has_smoke/counter)*100))
 
         img = np.array(orig_image)
-        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-        #NEmo: apply nms to discard highly overlapping bboxes
-        #probask = probas[keep]
-        #probask = probas
+        # NEmo: apply nms to discard highly overlapping bboxes
+        # probask = probas[keep]
+        # probask = probas
 
         if args.nmsup:
-            #import pdb; pdb.set_trace();
-            k=torch.max(probask,1)
+            # import pdb; pdb.set_trace();
+            k = torch.max(probask, 1)
             scores = k.values
             keepnms = nms(boxes=bboxes_scaled, scores=scores, iou_threshold=args.iou_thresh)
             bboxes_scaled = bboxes_scaled[keepnms]
@@ -457,45 +454,64 @@ def infer(images_path, model, postprocessors, device, output_path):
                 [bbox[2], bbox[1]],
                 [bbox[2], bbox[3]],
                 [bbox[0], bbox[3]],
-                ])
+            ])
             bbox = bbox.reshape((4, 2))
-            #cv2.polylines(img, [bbox], True, (0, 255, 0), 2)
-        #if args.disp_attn:
-            #plot_attn(h,w,bboxes_scaled,probask, img,dec_attn_weights, keepnms, figsave_path_attn) # probas[keep] --> probask
-        #import pdb; pdb.set_trace()
+            # cv2.polylines(img, [bbox], True, (0, 255, 0), 2)
+        # if args.disp_attn:
+        # plot_attn(h,w,bboxes_scaled,probask, img,dec_attn_weights, keepnms, figsave_path_attn) # probas[keep] --> probask
+        # import pdb; pdb.set_trace()
 
         if args.disp:
-            plot_results(img, probask, bboxes_scaled,figsave_path) # probas[keep] --> probask
-            
+            plot_results(img, probask, bboxes_scaled, figsave_path)  # probas[keep] --> probask
 
         # img_save_path = os.path.join(output_path, filename)
         # cv2.imwrite(img_save_path, img)
-        #img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
-        #cv2.imshow("img", img)
-        #cv2.waitKey()
+        # img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+        # cv2.imshow("img", img)
+        # cv2.waitKey()
         infer_time = end_t - start_t
         duration += infer_time
-        if v!=1:
+        if v != 1:
             print("Processing...{} ({:.3f}s)".format(filename, infer_time))
-        #print("Processing...{} ({:.3f}s)".format(filename, infer_time))
-
+        # print("Processing...{} ({:.3f}s)".format(filename, infer_time))
+    directory = '/home/nemo/Desktop/NemoInterface/Nemo-Backend/ProcessedImages/Inferences-ImagesToRun'
     avg_duration = duration / len(images_path)
+
+    # Check if the directory exists, if not create it
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
+    # Create a new file named stats.txt in the specified directory
+    file_path = os.path.join(directory, "stats.txt")
+    new_file = open(file_path, "w")
+    sys.stdout = new_file
+
+    # Prepare to write data to the file
     print("Avg. Time: {:.3f}s".format(avg_duration))
-    print("*DONE* smoke has been detected in {}/{} images".format(has_smoke,len(images_path)))
-    test_filename="test-{}-{}.txt".format(loaded_images,args.thresh)
-    infer_data = [has_smoke,cepoch,loaded_model,np.round(avg_duration,4)]
+    print("Total Time: {:.3f}s".format(duration))
+    print("Smoke has been detected in {}/{} images".format(has_smoke, len(images_path)))
 
+    sys.stdout = sys.__stdout__
 
-    #import pdb;pdb.set_trace()
+    # Close the file
+    new_file.close()
+
+    print("Avg. Time: {:.3f}s".format(avg_duration))
+    print("*DONE* smoke has been detected in {}/{} images".format(has_smoke, len(images_path)))
+    test_filename = "test-{}-{}.txt".format(loaded_images, args.thresh)
+    infer_data = [has_smoke, cepoch, loaded_model, np.round(avg_duration, 4)]
+
+    # import pdb;pdb.set_trace()
     if output_dir:
         (output_dir / 'infer_logs').mkdir(exist_ok=True)
         with (output_dir / "infer_logs" / test_filename).open("a") as f:
             writer = csv.writer(f)
-            #f.write(json.dumps(testLog) + "\n")
-            #writer.writerow(infer_header)
+            # f.write(json.dumps(testLog) + "\n")
+            # writer.writerow(infer_header)
             writer.writerow(infer_data)
 
-#MAIN FUNCTION, we should be able to alter the args here manually or in the parser--Curtis
+
+# MAIN FUNCTION, we should be able to alter the args here manually or in the parser--Curtis
 if __name__ == "__main__":
     parser = argparse.ArgumentParser('DETR training and evaluation script', parents=[get_args_parser()])
     args = parser.parse_args()
@@ -515,18 +531,18 @@ if __name__ == "__main__":
     model, _, postprocessors = build_model(args)
     if args.resume and not args.detr_base:
         model.load_state_dict(checkpoint['model'])
-    if args.output_dir: # only needed if resuming from a barebone checkpoint 
+    if args.output_dir:  # only needed if resuming from a barebone checkpoint
         output_dir = Path(args.output_dir)
     else:
         output_dir = os.path.dirname(args.resume)
         output_dir = Path(output_dir)
 
-    if output_dir and not args.detr_base: # This is where to save the test logs which is same as the experiment output_dir
+    if output_dir and not args.detr_base:  # This is where to save the test logs which is same as the experiment output_dir
         with (output_dir / "testargs.txt").open("w+") as fl:
-            fl.write(str(cargs).replace(" ","\n"))
+            fl.write(str(cargs).replace(" ", "\n"))
     if args.resume and args.detr_base:
         detrdict = torch.load(args.resume)
-        #model = detrdict["model"]
+        # model = detrdict["model"]
         model.load_state_dict(detrdict['model'])
 
     # print("DISP_ATTN: ", args.disp_attn)

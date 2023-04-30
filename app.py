@@ -104,7 +104,7 @@ def run_nemo_density(disp_attention, nmsup, iou_threshold, imagesToRun):
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)])  # .wait()
-    time.sleep(10)
+    time.sleep(2)
     get_processed_images(disp_attention, nmsup, iou_threshold)
     clean_up_nemo_run(disp_attention, nmsup, iou_threshold)
 
@@ -117,7 +117,7 @@ def run_nemo_single(disp_attention, nmsup, iou_threshold, imagesToRun):
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)])  # .wait()
-    time.sleep(10)
+    time.sleep(2)
     get_processed_images(disp_attention, nmsup, iou_threshold)
     clean_up_nemo_run(disp_attention, nmsup, iou_threshold)
 
