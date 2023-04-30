@@ -124,7 +124,7 @@ def get_processed_images(disp_attention, nmsup, iou_threshold):
 
     #If any video files were processed
     if (len(cur_mp4_folders) > 0):
-        print("Creating GIF")
+        #print("Creating GIF")
         processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
         smokeDetectedOnes = []
         for file in os.listdir(processed_images_dir):
@@ -140,9 +140,9 @@ def get_processed_images(disp_attention, nmsup, iou_threshold):
                     # print("SMOKE DETECTED")
                     smokeDetectedOnes.append(file)
                 x = x + 1
-        print("Formatting GIF Folder")
+        #print("Formatting GIF Folder")
         for dir in cur_mp4_folders:
-            print(dir)
+            #print(dir)
             beforeNemoFiles = os.listdir(dir)
             for file in beforeNemoFiles:
                 #print(file)
@@ -217,7 +217,7 @@ def get_frames(input_file, output_folder, step, count):
     Function Call:
         get_frames("test.mp4", 'data', 10, 10)
     '''
-
+    print("In Video Splitter Pls Python")
     frames_captured = 0
     current_frame = 0
 
@@ -236,12 +236,14 @@ def get_frames(input_file, output_folder, step, count):
     videoLengthSeconds = length / fps
     if (videoLengthSeconds > 60):
         print("Long: ", videoLengthSeconds)
+        count = 30
+        step = videoLengthSeconds / count
+        print("STEP: ", step)
     else:
         print("Short: ", videoLengthSeconds)
-        # count = 30
-        # step = videoLengthSeconds / count
-
-
+        count = 30
+        step = videoLengthSeconds / count
+        print("STEP: ", step)
     while True:
         ret, frame = cap.read()
         if ret:
