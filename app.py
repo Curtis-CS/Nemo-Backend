@@ -7,6 +7,7 @@ from pathlib import Path
 import zipfile
 import cv2
 import shutil
+import glob
 
 app = Flask(__name__)
 CORS(app)
@@ -141,7 +142,7 @@ def get_processed_images(disp_attention, nmsup, iou_threshold):
                 x = x + 1
         print("Formatting GIF Folder")
         for dir in cur_mp4_folders:
-            #print(dir)
+            print(dir)
             beforeNemoFiles = os.listdir(dir)
             for file in beforeNemoFiles:
                 #print(file)
@@ -151,6 +152,7 @@ def get_processed_images(disp_attention, nmsup, iou_threshold):
                         #print("Replace file: ", os.path.join(dir, file))
                         #print("With detected file: ", os.path.join(processed_images_dir[2:], detectFile))
                         os.replace(os.path.join(processed_images_dir[2:], detectFile), os.path.join(dir, file))
+            CreateGIF(dir)
 
 
     for name in files_to_send_back:
@@ -266,6 +268,35 @@ def CheckFileType(filename):
     else:
         return False
 
+def CreateGIF(dir):
+    print("MAKING GIF")
+    # specify the file path of the directory containing the images
+    image_directory = dir#'path/to/directory'
+
+    # use glob to get a list of all image file names in the directory
+    image_file_names = glob.glob(f"{image_directory}/*.png")
+
+    # sort the file names in numerical order
+    image_file_names.sort(key=lambda x: int(x.split('_')[-1].split('.')[0]))
+
+    # create a list to store the images
+    image_list = []
+    width, height = 1333, 1000
+    # loop through the file names and open each image using Pillow
+    for file_name in image_file_names:
+        image = Image.open(file_name)
+        image = image.resize((width, height))
+        image_list.append(image)
+        print(image.size)
+    #print(image_file_names)
+    # specify the name and file format of the output GIF
+    output_file_name = 'output.gif'
+
+    # specify the duration of each frame in milliseconds
+    duration = 100
+
+    # use Pillow to save the list of images as a GIF
+    image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", "Video.gif"), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
 
 if __name__ == "__main__":
     app.run(debug=True)
