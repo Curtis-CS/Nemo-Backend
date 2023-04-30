@@ -166,7 +166,7 @@ def clean_up_nemo_run(disp_attention, nmsup, iou_threshold):
         for file in os.listdir(attention_dir):
             os.remove(os.path.join(attention_dir, file))
     for dir in cur_mp4_folders:
-        # shutil.rmtree(dir)
+        shutil.rmtree(dir)
         print(dir)
 
 
