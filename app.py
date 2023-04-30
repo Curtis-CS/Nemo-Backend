@@ -6,11 +6,13 @@ import os
 from pathlib import Path
 import zipfile
 import cv2
+import shutil
 
 app = Flask(__name__)
 CORS(app)
 
 files_to_send_back = []
+cur_mp4_folders = []
 
 
 @app.route("/", methods=['POST'])
@@ -32,37 +34,69 @@ def process_image():
         if (disp_attention_bool == "true"):
             disp_attention = 1
         filename = file.filename
-        image = Image.open(file)
 
-        p = Path('./ImagesToRun/' + filename)
-        image.save(p)
+        runFolder = "./ImagesToRun/"
 
-        print("RUN TYPE = ", run_type)
+        if (CheckFileType(filename)):
+            print ("VIDEO FILE DETECTED")
+            print("RUN TYPE = ", run_type)
+            file.save(filename)
+            
+            outputDir = "F" + filename[:-4]
+            get_frames(filename, outputDir, 1, 30)
+            p = Path(runFolder + filename)
+            for fileN in os.listdir(outputDir):
+                shutil.copy(os.path.join(outputDir, fileN), os.path.join(runFolder, fileN))
+            cur_mp4_folders.append(outputDir)
+            # Run Nemo Model Once all Images Have Arrived
+            if (files_left < 1):
+                if (run_type == True):
+                    print("SINGLE CLASS RUN")
+                    run_nemo_single(disp_attention, nmsup, iou_threshold, runFolder)
 
-        # Run Nemo Model Once all Images Have Arrived
-        if (files_left < 1):
-            get_frames('20160604-FIRE-smer-tcs3-mobo-c.mp4', 'mp4split', 1, 30)
-            if (run_type == True):
-                print("SINGLE CLASS RUN")
-                run_nemo_single(disp_attention, nmsup, iou_threshold)
+                else:
+                    print("DENSITY CLASS RUN")
+                    run_nemo_density(disp_attention, nmsup, iou_threshold, runFolder)
 
+                path = os.path.abspath('results.zip')
+                # app.logger.warning(path)
+                # app.logger.warning(os.path.getsize(path))
+                cur_mp4_folders.clear()
+                return send_file(path, mimetype='application/zip')
             else:
-                print("DENSITY CLASS RUN")
-                run_nemo_density(disp_attention, nmsup, iou_threshold)
-
-            path = os.path.abspath('results.zip')
-            # app.logger.warning(path)
-            # app.logger.warning(os.path.getsize(path))
-            return send_file(path, mimetype='application/zip')
+                return "none"
         else:
-            return "none"
+            image = Image.open(file)
+
+            p = Path(runFolder + filename)
+            image.save(p)
+
+            print("RUN TYPE = ", run_type)
+            # Run Nemo Model Once all Images Have Arrived
+            if (files_left < 1):
+                #get_frames('20160604-FIRE-smer-tcs3-mobo-c.mp4', 'mp4split', 1, 30)
+                if (run_type == True):
+                    print("SINGLE CLASS RUN")
+                    run_nemo_single(disp_attention, nmsup, iou_threshold, runFolder)
+
+                else:
+                    print("DENSITY CLASS RUN")
+                    run_nemo_density(disp_attention, nmsup, iou_threshold, runFolder)
+
+                path = os.path.abspath('results.zip')
+                # app.logger.warning(path)
+                # app.logger.warning(os.path.getsize(path))
+                cur_mp4_folders.clear()
+                return send_file(path, mimetype='application/zip')
+            else:
+                return "none"
 
 
 # Run Nemo
-def run_nemo_density(disp_attention, nmsup, iou_threshold):
+def run_nemo_density(disp_attention, nmsup, iou_threshold, imagesToRun):
     print("Running Nemo")
     subprocess.call(["python3", "./NemoModel/detr/test.py",
-                     "--data_path", "./ImagesToRun/",
+                     "--data_path", imagesToRun,
                      "--resume", "./NemoModel/Nemo-DETR-dg.pth",
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
@@ -71,10 +105,10 @@ def run_nemo_density(disp_attention, nmsup, iou_threshold):
     clean_up_nemo_run(disp_attention, nmsup, iou_threshold)
 
 
-def run_nemo_single(disp_attention, nmsup, iou_threshold):
+def run_nemo_single(disp_attention, nmsup, iou_threshold, imagesToRun):
     print("Running Nemo")
     subprocess.call(["python3", "./NemoModel/detr/test.py",
-                     "--data_path", "./ImagesToRun/",
+                     "--data_path", imagesToRun,
                      "--resume", "./NemoModel/Nemo-DETR-dg.pth",
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
@@ -131,6 +165,9 @@ def clean_up_nemo_run(disp_attention, nmsup, iou_threshold):
         attention_dir = './ProcessedImages/Attn_viz'
         for file in os.listdir(attention_dir):
             os.remove(os.path.join(attention_dir, file))
+    for dir in cur_mp4_folders:
+        # shutil.rmtree(dir)
+        print(dir)
 
 
 def get_frames(input_file, output_folder, step, count):
@@ -170,7 +207,7 @@ def get_frames(input_file, output_folder, step, count):
 
                 # saving the frames (screenshots)
                 name = f"{output_folder}/{os.path.splitext(os.path.basename(input_file))[0]}_{frames_captured}.jpg"
-                print(f'Creating {name}')
+                # print(f'Creating {name}')
 
                 cv2.imwrite(name, frame)
                 frames_captured += 1
@@ -186,6 +223,16 @@ def get_frames(input_file, output_folder, step, count):
     # Releasing all space and windows once done
     cap.release()
     cv2.destroyAllWindows()
+    os.remove(input_file)
+
+def CheckFileType(filename):
+    splitType = filename.split(".")
+    type = splitType[1]
+    print(type)
+    if (type == "mp4"):
+        return True
+    else:
+        return False
 
 
 if __name__ == "__main__":
