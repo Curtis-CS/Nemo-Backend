@@ -53,6 +53,7 @@ def process_image():
             cur_mp4_folders.append(outputDir)
             # Run Nemo Model Once all Images Have Arrived
             if (files_left < 1):
+                print("THIS SHOULD NOT BE DIPLICATED")
                 if (run_type == True):
                     print("SINGLE CLASS RUN")
                     run_nemo_single(disp_attention, nmsup, iou_threshold, runFolder)
@@ -60,7 +61,6 @@ def process_image():
                 else:
                     print("DENSITY CLASS RUN")
                     run_nemo_density(disp_attention, nmsup, iou_threshold, runFolder)
-
                 path = os.path.abspath('results.zip')
                 # app.logger.warning(path)
                 # app.logger.warning(os.path.getsize(path))
@@ -77,6 +77,7 @@ def process_image():
             print("RUN TYPE = ", run_type)
             # Run Nemo Model Once all Images Have Arrived
             if (files_left < 1):
+                print("THIS SHOULD NOT BE DIPLICATED")
                 #get_frames('20160604-FIRE-smer-tcs3-mobo-c.mp4', 'mp4split', 1, 30)
                 if (run_type == True):
                     print("SINGLE CLASS RUN")
@@ -85,7 +86,6 @@ def process_image():
                 else:
                     print("DENSITY CLASS RUN")
                     run_nemo_density(disp_attention, nmsup, iou_threshold, runFolder)
-
                 path = os.path.abspath('results.zip')
                 # app.logger.warning(path)
                 # app.logger.warning(os.path.getsize(path))
