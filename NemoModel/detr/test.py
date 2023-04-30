@@ -474,6 +474,7 @@ def infer(images_path, model, postprocessors, device, output_path):
         if v != 1:
             print("Processing...{} ({:.3f}s)".format(filename, infer_time))
         # print("Processing...{} ({:.3f}s)".format(filename, infer_time))
+
     directory = '/home/nemo/Desktop/NemoInterface/Nemo-Backend/ProcessedImages/Inferences-ImagesToRun'
     avg_duration = duration / len(images_path)
 
