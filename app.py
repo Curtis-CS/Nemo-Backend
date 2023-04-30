@@ -120,6 +120,39 @@ def run_nemo_single(disp_attention, nmsup, iou_threshold, imagesToRun):
 def get_processed_images(disp_attention, nmsup, iou_threshold):
     """ Function to append processed Nemo files to an array. """
     files_to_send_back.clear()
+
+    #If any video files were processed
+    if (len(cur_mp4_folders) > 0):
+        print("Creating GIF")
+        processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
+        smokeDetectedOnes = []
+        for file in os.listdir(processed_images_dir):
+            x = 0
+            while (x < len(cur_mp4_folders)):
+                # print(cur_mp4_folders[x])
+                # print(type(cur_mp4_folders[x]))
+                # print(file)
+                # print(type(file))
+                detectedCommonName = cur_mp4_folders[x][1:] in file
+                # print(detectedCommonName)
+                if (detectedCommonName):
+                    # print("SMOKE DETECTED")
+                    smokeDetectedOnes.append(file)
+                x = x + 1
+        print("Formatting GIF Folder")
+        for dir in cur_mp4_folders:
+            #print(dir)
+            beforeNemoFiles = os.listdir(dir)
+            for file in beforeNemoFiles:
+                #print(file)
+                for detectFile in smokeDetectedOnes:
+                    #print(detectFile)
+                    if (file in detectFile):
+                        #print("Replace file: ", os.path.join(dir, file))
+                        #print("With detected file: ", os.path.join(processed_images_dir[2:], detectFile))
+                        os.replace(os.path.join(processed_images_dir[2:], detectFile), os.path.join(dir, file))
+
+
     for name in files_to_send_back:
         print(name)
     print("Getting Nemo Results")
@@ -167,8 +200,7 @@ def clean_up_nemo_run(disp_attention, nmsup, iou_threshold):
             os.remove(os.path.join(attention_dir, file))
     for dir in cur_mp4_folders:
         shutil.rmtree(dir)
-        print(dir)
-
+        #print(dir)
 
 def get_frames(input_file, output_folder, step, count):
     '''
@@ -206,7 +238,7 @@ def get_frames(input_file, output_folder, step, count):
                 current_frame = 0
 
                 # saving the frames (screenshots)
-                name = f"{output_folder}/{os.path.splitext(os.path.basename(input_file))[0]}_{frames_captured}.jpg"
+                name = f"{output_folder}/{os.path.splitext(os.path.basename(input_file))[0]}_{frames_captured}.png"
                 # print(f'Creating {name}')
 
                 cv2.imwrite(name, frame)
