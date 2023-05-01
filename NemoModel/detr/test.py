@@ -477,13 +477,17 @@ def infer(images_path, model, postprocessors, device, output_path):
 
     directory = os.getcwd()
     avg_duration = duration / len(images_path)
-    directory = directory + "/ProcessedImages/Inferences-ImagesToRun"
+    if (args.disp_attn == 1):
+         directory = directory + "/ProcessedImages/Attn_viz"
+    else:
+        directory = directory + "/ProcessedImages/Inferences-ImagesToRun"
     # Check if the directory exists, if not create it
     if not os.path.exists(directory):
         os.makedirs(directory)
 
     # Create a new file named stats.txt in the specified directory
-    print(os.path.join(directory, "stats.txt"))
+    # print(os.path.join(directory, "stats.txt"))
+    print(args.disp_attn)
     file_path = os.path.join(directory, "stats.txt")
     new_file = open(file_path, "w")
     sys.stdout = new_file
