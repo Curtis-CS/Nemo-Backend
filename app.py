@@ -104,6 +104,7 @@ def process_image():
 
 # Run Nemo
 def run_nemo_density(disp_attention, nmsup, iou_threshold, imagesToRun):
+    time.sleep(2)
     print("Running Nemo")
     subprocess.call(["python3", "./NemoModel/detr/test.py",
                      "--data_path", imagesToRun,
@@ -116,6 +117,7 @@ def run_nemo_density(disp_attention, nmsup, iou_threshold, imagesToRun):
 
 
 def run_nemo_single(disp_attention, nmsup, iou_threshold, imagesToRun):
+    time.sleep(2)
     print("Running Nemo")
     subprocess.call(["python3", "./NemoModel/detr/test.py",
                      "--data_path", imagesToRun,
