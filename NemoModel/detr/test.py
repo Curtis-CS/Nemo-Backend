@@ -475,22 +475,24 @@ def infer(images_path, model, postprocessors, device, output_path):
             print("Processing...{} ({:.3f}s)".format(filename, infer_time))
         # print("Processing...{} ({:.3f}s)".format(filename, infer_time))
 
-    directory = '/home/nemo/Desktop/NemoInterface/Nemo-Backend/ProcessedImages/Inferences-ImagesToRun'
+    directory = os.getcwd()
     avg_duration = duration / len(images_path)
-
+    directory = directory + "/ProcessedImages/Inferences-ImagesToRun"
     # Check if the directory exists, if not create it
     if not os.path.exists(directory):
         os.makedirs(directory)
 
     # Create a new file named stats.txt in the specified directory
+    print(os.path.join(directory, "stats.txt"))
     file_path = os.path.join(directory, "stats.txt")
     new_file = open(file_path, "w")
     sys.stdout = new_file
 
     # Prepare to write data to the file
-    print("Avg. Time: {:.3f}s".format(avg_duration))
-    print("Total Time: {:.3f}s".format(duration))
-    print("Smoke has been detected in {}/{} images".format(has_smoke, len(images_path)))
+    print(avg_duration)
+    print(duration)
+    print(has_smoke)
+    print(len(images_path))
 
     sys.stdout = sys.__stdout__
 
