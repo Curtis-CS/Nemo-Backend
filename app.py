@@ -163,7 +163,7 @@ def get_processed_images(disp_attention, nmsup, iou_threshold):
                         #print("Replace file: ", os.path.join(dir, file))
                         #print("With detected file: ", os.path.join(processed_images_dir[2:], detectFile))
                         os.replace(os.path.join(processed_images_dir[2:], detectFile), os.path.join(dir, file))
-            CreateGIF(dir)
+            CreateGIF(dir, disp_attention)
     print("Getting Nemo Results")
     if (disp_attention == 0):
         processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
@@ -286,7 +286,7 @@ def CheckFileType(filename):
     else:
         return False
 
-def CreateGIF(dir):
+def CreateGIF(dir, disp_attn):
     print("MAKING GIF")
     # specify the file path of the directory containing the images
     image_directory = dir#'path/to/directory'
@@ -314,7 +314,10 @@ def CreateGIF(dir):
     duration = 300
 
     # use Pillow to save the list of images as a GIF
-    image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
+    if (disp_attn == 1):
+        image_list[0].save(os.path.join("./ProcessedImages/Attn_viz/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
+    else:
+        image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
 
 if __name__ == "__main__":
     app.run(debug=True)
