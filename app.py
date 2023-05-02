@@ -9,7 +9,7 @@ import os
 from pathlib import Path
 # Used for zipping results to send back
 import zipfile
-# FOr reading in an splitting video files
+# For reading in and splitting video files
 import cv2
 # For copying files
 import shutil
