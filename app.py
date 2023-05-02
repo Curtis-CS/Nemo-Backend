@@ -16,98 +16,106 @@ CORS(app)
 
 files_to_send_back = []
 cur_mp4_folders = []
-#stillProcessing = []
 
 
-@app.route("/", methods=['POST'])
+@app.route("/", methods=['POST', 'GET'])
 def process_image():
-    if request.method == "POST":
-        # set 1 to plot encoder-decoder attention weights---default values
-        disp_attention = 0
-        disp_attention_bool = False
-        # apply non-max suppression to bounding boxes---default values
-        nmsup = .25
-        # threshold for non-max suppression---default valuesw
-        iou_threshold = .2
+    
+    disp_attention = 0                          # set 1 to plot encoder-decoder attention weights---default values
+    file = ''
+    filename = ''
+    files_left = 0
+    iou_threshold = .2                          # threshold for non-max suppression---default values
+    nmsup = .25                                 # apply non-max suppression to bounding boxes---default values
+    run_folder = "./ImagesToRun/"
+    run_type = True
+    
+    if request.method == "GET":
+        filename = '1465065728_+00060.jpg'
+        files_left = 0
 
+    if request.method == "POST":
         # Receive Single File
         file = request.files['file']
         files_left = int(request.form['filesLeft']) - 1
         run_type = request.form['runType']
         disp_attention_bool = request.form['attention_weights']
-        if (disp_attention_bool == "true"):
+        if disp_attention_bool == "true":
             disp_attention = 1
         filename = file.filename
 
-        runFolder = "./ImagesToRun/"
+    # Handle Video File
+    if check_file_type(filename):
+        print("VIDEO FILE DETECTED")
+        # stillProcessing.append("PROCESSING")
+        print("RUN TYPE = ", run_type)
+        file.save(filename)
+        
+        output_dir = "F" + filename[:-4]
+        get_frames(filename, output_dir, 1, 30)
+        p = Path(run_folder + filename)
+        for fileN in os.listdir(output_dir):
+            shutil.copy(os.path.join(output_dir, fileN), os.path.join(run_folder, fileN))
+        cur_mp4_folders.append(output_dir)
+        # Run Nemo Model Once all Images Have Arrived
+        # stillProcessing.append("DONE")
+        if files_left < 1:
+            # print("THIS SHOULD NOT BE DUPLICATED")
+            # print("Still Processing: ", stillProcessing)
+            if run_type:
+                print("SINGLE CLASS RUN")
+                run_nemo_single(disp_attention, nmsup, iou_threshold, run_folder)
 
-        if (CheckFileType(filename)):
-            print ("VIDEO FILE DETECTED")
-            #stillProcessing.append("PROCESSING")
-            print("RUN TYPE = ", run_type)
-            file.save(filename)
-            
-            outputDir = "F" + filename[:-4]
-            get_frames(filename, outputDir, 1, 30)
-            p = Path(runFolder + filename)
-            for fileN in os.listdir(outputDir):
-                shutil.copy(os.path.join(outputDir, fileN), os.path.join(runFolder, fileN))
-            cur_mp4_folders.append(outputDir)
-            # Run Nemo Model Once all Images Have Arrived
-            #stillProcessing.append("DONE")
-            if (files_left < 1):
-                #print("THIS SHOULD NOT BE DIPLICATED")
-                #print("Still Processing: ", stillProcessing)
-                if (run_type == True):
-                    print("SINGLE CLASS RUN")
-                    run_nemo_single(disp_attention, nmsup, iou_threshold, runFolder)
-
-                else:
-                    print("DENSITY CLASS RUN")
-                    run_nemo_density(disp_attention, nmsup, iou_threshold, runFolder)
-                #print("Still Processing: ", stillProcessing)
-                path = os.path.abspath('results.zip')
-                # app.logger.warning(path)
-                # app.logger.warning(os.path.getsize(path))
-                cur_mp4_folders.clear()
-                return send_file(path, mimetype='application/zip')
             else:
-                return "none"
+                print("DENSITY CLASS RUN")
+                run_nemo_density(disp_attention, nmsup, iou_threshold, run_folder)
+            # print("Still Processing: ", stillProcessing)
+            path = os.path.abspath('results.zip')
+            # app.logger.warning(path)
+            # app.logger.warning(os.path.getsize(path))
+            cur_mp4_folders.clear()
+            return send_file(path, mimetype='application/zip')
         else:
-            image = Image.open(file)
+            return "none"
+    # Handle Image File
+    else:
+        if request.method == "GET":
+            shutil.copy('defaultImages/1465065728_+00060.jpg', os.path.join(run_folder, filename))
 
-            p = Path(runFolder + filename)
+        if request.method == "POST":
+            image = Image.open(file)
+            p = Path(run_folder + filename)
             image.save(p)
 
-            print("RUN TYPE = ", run_type)
-            # Run Nemo Model Once all Images Have Arrived
-            if (files_left < 1):
-                #print("THIS SHOULD NOT BE DIPLICATED")
-                #print("Still Processing and in Image: ", stillProcessing)
-                #get_frames('20160604-FIRE-smer-tcs3-mobo-c.mp4', 'mp4split', 1, 30)
-                if (run_type == True):
-                    print("SINGLE CLASS RUN")
-                    run_nemo_single(disp_attention, nmsup, iou_threshold, runFolder)
+        print("RUN TYPE = ", run_type)
+        # Run Nemo Model Once all Images Have Arrived
+        if files_left < 1:
+            # print("THIS SHOULD NOT BE DUPLICATED")
+            # print("Still Processing and in Image: ", stillProcessing)
+            # get_frames('20160604-FIRE-smer-tcs3-mobo-c.mp4', 'mp4split', 1, 30)
+            if run_type:
+                print("SINGLE CLASS RUN")
+                run_nemo_single(disp_attention, nmsup, iou_threshold, run_folder)
 
-                else:
-                    print("DENSITY CLASS RUN")
-                    run_nemo_density(disp_attention, nmsup, iou_threshold, runFolder)
-                path = os.path.abspath('results.zip')
-                # app.logger.warning(path)
-                # app.logger.warning(os.path.getsize(path))
-                cur_mp4_folders.clear()
-                return send_file(path, mimetype='application/zip')
             else:
-                #print("Still Processing and in Image: ", stillProcessing)
-                return "none"
+                print("DENSITY CLASS RUN")
+                run_nemo_density(disp_attention, nmsup, iou_threshold, run_folder)
+            path = os.path.abspath('results.zip')
+            # app.logger.warning(path)
+            # app.logger.warning(os.path.getsize(path))
+            cur_mp4_folders.clear()
+            return send_file(path, mimetype='application/zip')
+        else:
+            # print("Still Processing and in Image: ", stillProcessing)
+            return "none"
 
 
 # Run Nemo
-def run_nemo_density(disp_attention, nmsup, iou_threshold, imagesToRun):
+def run_nemo_density(disp_attention, nmsup, iou_threshold, images_to_run):
     time.sleep(2)
     print("Running Nemo")
     subprocess.call(["python3", "./NemoModel/detr/test.py",
-                     "--data_path", imagesToRun,
+                     "--data_path", images_to_run,
                      "--resume", "./NemoModel/Nemo-DETR-dg.pth",
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
@@ -116,11 +124,11 @@ def run_nemo_density(disp_attention, nmsup, iou_threshold, imagesToRun):
     clean_up_nemo_run(disp_attention, nmsup, iou_threshold)
 
 
-def run_nemo_single(disp_attention, nmsup, iou_threshold, imagesToRun):
+def run_nemo_single(disp_attention, nmsup, iou_threshold, images_to_run):
     time.sleep(2)
     print("Running Nemo")
     subprocess.call(["python3", "./NemoModel/detr/test.py",
-                     "--data_path", imagesToRun,
+                     "--data_path", images_to_run,
                      "--resume", "./NemoModel/Nemo-DETR-dg.pth",
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
@@ -133,39 +141,39 @@ def get_processed_images(disp_attention, nmsup, iou_threshold):
     """ Function to append processed Nemo files to an array. """
     files_to_send_back.clear()
 
-    #If any video files were processed
-    if (len(cur_mp4_folders) > 0):
-        #print("Creating GIF")
+    # If any video files were processed
+    if len(cur_mp4_folders) > 0:
+        # print("Creating GIF")
         processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
-        smokeDetectedOnes = []
+        smoke_detected_ones = []
         for file in os.listdir(processed_images_dir):
             x = 0
-            while (x < len(cur_mp4_folders)):
+            while x < len(cur_mp4_folders):
                 # print(cur_mp4_folders[x])
                 # print(type(cur_mp4_folders[x]))
                 # print(file)
                 # print(type(file))
-                detectedCommonName = cur_mp4_folders[x][1:] in file
-                # print(detectedCommonName)
-                if (detectedCommonName):
+                detected_common_name = cur_mp4_folders[x][1:] in file
+                # print(detected_common_name)
+                if detected_common_name:
                     # print("SMOKE DETECTED")
-                    smokeDetectedOnes.append(file)
+                    smoke_detected_ones.append(file)
                 x = x + 1
-        #print("Formatting GIF Folder")
-        for dir in cur_mp4_folders:
-            #print(dir)
-            beforeNemoFiles = os.listdir(dir)
-            for file in beforeNemoFiles:
-                #print(file)
-                for detectFile in smokeDetectedOnes:
-                    #print(detectFile)
-                    if (file in detectFile):
-                        #print("Replace file: ", os.path.join(dir, file))
-                        #print("With detected file: ", os.path.join(processed_images_dir[2:], detectFile))
-                        os.replace(os.path.join(processed_images_dir[2:], detectFile), os.path.join(dir, file))
-            CreateGIF(dir, disp_attention)
+        # print("Formatting GIF Folder")
+        for direc in cur_mp4_folders:
+            # print(dir)
+            before_nemo_files = os.listdir(direc)
+            for file in before_nemo_files:
+                # print(file)
+                for detectFile in smoke_detected_ones:
+                    # print(detectFile)
+                    if file in detectFile:
+                        # print("Replace file: ", os.path.join(dir, file))
+                        # print("With detected file: ", os.path.join(processed_images_dir[2:], detectFile))
+                        os.replace(os.path.join(processed_images_dir[2:], detectFile), os.path.join(direc, file))
+            CreateGIF(direc, disp_attention)
     print("Getting Nemo Results")
-    if (disp_attention == 0):
+    if disp_attention == 0:
         processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
         index = 0
         for file in os.listdir(processed_images_dir):
@@ -203,16 +211,17 @@ def clean_up_nemo_run(disp_attention, nmsup, iou_threshold):
     images_to_run_dir = './ImagesToRun'
     for file in os.listdir(images_to_run_dir):
         os.remove(os.path.join(images_to_run_dir, file))
-    if (disp_attention == 1):
+    if disp_attention == 1:
         attention_dir = './ProcessedImages/Attn_viz'
         for file in os.listdir(attention_dir):
             os.remove(os.path.join(attention_dir, file))
-    for dir in cur_mp4_folders:
-        shutil.rmtree(dir)
-        #print(dir)
+    for direc in cur_mp4_folders:
+        shutil.rmtree(direc)
+        # print(dir)
+
 
 def get_frames(input_file, output_folder, step, count):
-    '''
+    """
     Input:
       inputFile - name of the input file with directory
       outputFolder - name and path of the folder to save the results
@@ -223,7 +232,7 @@ def get_frames(input_file, output_folder, step, count):
       in folder 'outputFolder'
     Function Call:
         get_frames("test.mp4", 'data', 10, 10)
-    '''
+    """
     print("In Video Splitter Pls Python")
     frames_captured = 0
     current_frame = 0
@@ -240,16 +249,16 @@ def get_frames(input_file, output_folder, step, count):
     # reading the number of frames at that particular second
     fps = cap.get(cv2.CAP_PROP_FPS)
     length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-    videoLengthSeconds = length / fps
-    if (videoLengthSeconds > 60):
-        print("Long: ", videoLengthSeconds)
+    video_length_seconds = length / fps
+    if video_length_seconds > 60:
+        print("Long: ", video_length_seconds)
         count = 30
-        step = videoLengthSeconds / count
+        step = video_length_seconds / count
         print("STEP: ", step)
     else:
-        print("Short: ", videoLengthSeconds)
+        print("Short: ", video_length_seconds)
         count = 30
-        step = videoLengthSeconds / count
+        step = video_length_seconds / count
         print("STEP: ", step)
     while True:
         ret, frame = cap.read()
@@ -277,19 +286,21 @@ def get_frames(input_file, output_folder, step, count):
     cv2.destroyAllWindows()
     os.remove(input_file)
 
-def CheckFileType(filename):
-    splitType = filename.split(".")
-    type = splitType[1]
-    #print(type)
-    if (type == "mp4"):
+
+def check_file_type(filename):
+    split_type = filename.split(".")
+    f_type = split_type[1]
+    # print(type)
+    if f_type == "mp4":
         return True
     else:
         return False
 
-def CreateGIF(dir, disp_attn):
+
+def CreateGIF(direc, disp_attn):
     print("MAKING GIF")
     # specify the file path of the directory containing the images
-    image_directory = dir#'path/to/directory'
+    image_directory = direc  # 'path/to/directory'
 
     # use glob to get a list of all image file names in the directory
     image_file_names = glob.glob(f"{image_directory}/*.png")
@@ -305,19 +316,20 @@ def CreateGIF(dir, disp_attn):
         image = Image.open(file_name)
         image = image.resize((width, height))
         image_list.append(image)
-        #print(image.size)
-    #print(image_file_names)
+        # print(image.size)
+    # print(image_file_names)
     # specify the name and file format of the output GIF
-    output_file_name = dir + ".gif"
+    output_file_name = direc + ".gif"
 
     # specify the duration of each frame in milliseconds
     duration = 300
 
     # use Pillow to save the list of images as a GIF
-    if (disp_attn == 1):
+    if disp_attn == 1:
         image_list[0].save(os.path.join("./ProcessedImages/Attn_viz/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
     else:
         image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
