@@ -1,22 +1,22 @@
-#Backend server running 
+# Backend server running 
 from flask import Flask, request, send_file
 from flask_cors import CORS
-#For opening and saving images
+# For opening and saving images
 from PIL import Image
-#For running nemo model
+# For running nemo model
 import subprocess
 import os
 from pathlib import Path
-#Used for zipping results to send back
+# Used for zipping results to send back
 import zipfile
-#FOr reading in an splitting video files
+# FOr reading in an splitting video files
 import cv2
-#For copying files
+# For copying files
 import shutil
-#For reading in files to convert to GIF
+# For reading in files to convert to GIF
 import glob
 
-#For slower computers to give time to copy files
+# For slower computers to give time to copy files
 import time
 
 app = Flask(__name__)
@@ -43,7 +43,7 @@ def process_image():
         filename = '1465065728_+00060.jpg'
         files_left = 0
 
-    #Else it is uploading files
+    # Else it is uploading files
     elif request.method == "POST":
         file = request.files['file']
         files_left = int(request.form['filesLeft']) - 1
@@ -58,19 +58,18 @@ def process_image():
         file.save(filename)
         
         output_dir = "F" + filename[:-4]
-        get_frames(filename, output_dir, 1, 30)
-        p = Path(run_folder + filename)
+        get_frames(filename, output_dir)
         for fileN in os.listdir(output_dir):
             shutil.copy(os.path.join(output_dir, fileN), os.path.join(run_folder, fileN))
         cur_mp4_folders.append(output_dir)
     
     # Handle Image File
     else:
-        #If test run method
+        # If test run method
         if request.method == "GET":
             shutil.copy('defaultImages/1465065728_+00060.jpg', os.path.join(run_folder, filename))
 
-        #Else it is uploaded files from user method
+        # Else it is uploaded files from user method
         elif request.method == "POST":
             image = Image.open(file)
             p = Path(run_folder + filename)
@@ -84,7 +83,7 @@ def process_image():
             print("SINGLE CLASS RUN")
             run_nemo_single(disp_attention, nmsup, iou_threshold, run_folder)
         
-        #IF density class run
+        # IF density class run
         else:
             print("DENSITY CLASS RUN")
             run_nemo_density(disp_attention, nmsup, iou_threshold, run_folder)
@@ -92,10 +91,10 @@ def process_image():
         path = os.path.abspath('results.zip')
         cur_mp4_folders.clear()
         
-        #Send the results to the frontend
+        # Send the results to the frontend
         return send_file(path, mimetype='application/zip')
     
-    #Else, we are waiting for more files to be sent
+    # Else, we are waiting for more files to be sent
     else:
         return "none"
 
@@ -152,7 +151,7 @@ def get_processed_images(disp_attention):
                 for detectFile in smoke_detected_ones:
                     if file in detectFile:
                         os.replace(os.path.join(processed_images_dir[2:], detectFile), os.path.join(direc, file))
-            CreateGIF(direc, disp_attention)
+            create_gif(direc, disp_attention)
     print("Getting Nemo Results")
     if disp_attention == 0:
         processed_images_dir = './ProcessedImages/Inferences-ImagesToRun'
@@ -190,7 +189,7 @@ def clean_up_nemo_run(disp_attention):
         shutil.rmtree(direc)
 
 
-def get_frames(input_file, output_folder, step, count):
+def get_frames(input_file, output_folder):
     """
     Input:
       inputFile - name of the input file with directory
@@ -201,7 +200,7 @@ def get_frames(input_file, output_folder, step, count):
       'count' number of screenshots that are 'step' seconds apart created from video 'inputFile' and stored
       in folder 'outputFolder'
     Function Call:
-        get_frames("test.mp4", 'data', 10, 10)
+        get_frames("test.mp4", 'data')
     """
     frames_captured = 0
     current_frame = 0
@@ -219,7 +218,7 @@ def get_frames(input_file, output_folder, step, count):
     fps = cap.get(cv2.CAP_PROP_FPS)
     length = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     video_length_seconds = length / fps
-    #IF the video is longer, analyze more frames
+    # IF the video is longer, analyze more frames
     if video_length_seconds > 60:
         count = 45
         step = video_length_seconds / count
@@ -261,8 +260,7 @@ def check_file_type(filename):
         return False
 
 
-def CreateGIF(direc, disp_attn):
-    print("MAKING GIF")
+def create_gif(direc, disp_attn):
     # specify the file path of the directory containing the images
     image_directory = direc  # 'path/to/directory'
 
@@ -287,11 +285,14 @@ def CreateGIF(direc, disp_attn):
     duration = 300
 
     # use Pillow to save the list of images as a GIF
-    #If encoder-decoder attention weights, save to different place
+    # If encoder-decoder attention weights, save to different place
     if disp_attn == 1:
-        image_list[0].save(os.path.join("./ProcessedImages/Attn_viz/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
+        image_list[0].save(os.path.join("./ProcessedImages/Attn_viz/", output_file_name), 
+                           save_all=True, append_images=image_list[1:], duration=duration, loop=0)
     else:
-        image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", output_file_name), save_all=True, append_images=image_list[1:], duration=duration, loop=0)
+        image_list[0].save(os.path.join("./ProcessedImages/Inferences-ImagesToRun/", output_file_name), 
+                           save_all=True, append_images=image_list[1:], duration=duration, loop=0)
+
 
 if __name__ == "__main__":
     app.run(debug=True)
