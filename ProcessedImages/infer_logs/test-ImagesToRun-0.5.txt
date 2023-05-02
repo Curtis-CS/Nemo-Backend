@@ -100,3 +100,11 @@
 1,492,Nemo-DETR-dg.pth,0.7862
 1,492,Nemo-DETR-dg.pth,0.7644
 1,492,Nemo-DETR-dg.pth,0.7696
+1,492,Nemo-DETR-dg.pth,0.7922
+43,492,Nemo-DETR-dg.pth,0.3236
+43,492,Nemo-DETR-dg.pth,0.319
+19,492,Nemo-DETR-dg.pth,0.4377
+43,492,Nemo-DETR-dg.pth,0.3225
+43,492,Nemo-DETR-dg.pth,0.3274
+43,492,Nemo-DETR-dg.pth,0.3211
+43,492,Nemo-DETR-dg.pth,0.3257
