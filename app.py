@@ -90,7 +90,7 @@ def process_image():
             print("DENSITY CLASS RUN")
             path_to_pth = "./NemoModel/Nemo-DETR-dg.pth"
         
-        #Run Nemo
+        # Run Nemo
         run_nemo(disp_attention, nmsup, iou_threshold, run_folder, path_to_pth)
 
         path = os.path.abspath('results.zip')
@@ -116,6 +116,7 @@ def run_nemo(disp_attention, nmsup, iou_threshold, images_to_run, path_to_pth):
                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)])
     get_processed_images(disp_attention)
     clean_up_nemo_run(disp_attention)
+
 
 def get_processed_images(disp_attention):
     """ Function to append processed Nemo files to an array. """
