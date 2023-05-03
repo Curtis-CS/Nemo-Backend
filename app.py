@@ -49,6 +49,8 @@ def process_image():
         files_left = int(request.form['filesLeft']) - 1
         run_type = request.form['runType']
         disp_attention_bool = request.form['attention_weights']
+        iou_threshold = request.form['iou_thresh']
+        nmsup = request.form['nmsup']
         if disp_attention_bool == "true":
             disp_attention = 1
         filename = file.filename
