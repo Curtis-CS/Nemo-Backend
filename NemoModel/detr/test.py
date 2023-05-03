@@ -486,15 +486,14 @@ def infer(images_path, model, postprocessors, device, output_path):
         os.makedirs(directory)
 
     # Create a new file named stats.txt in the specified directory
-    # print(os.path.join(directory, "stats.txt"))
     print(args.disp_attn)
     file_path = os.path.join(directory, "stats.txt")
     new_file = open(file_path, "w")
     sys.stdout = new_file
 
     # Prepare to write data to the file
-    print(avg_duration)
-    print(duration)
+    print("{:.3f}".format(avg_duration))
+    print("{:.3f}".format(duration))
     print(has_smoke)
     print(len(images_path))
 

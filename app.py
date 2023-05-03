@@ -81,12 +81,15 @@ def process_image():
         # If single class run
         if run_type:
             print("SINGLE CLASS RUN")
-            run_nemo_single(disp_attention, nmsup, iou_threshold, run_folder)
+            path_to_pth = "./NemoModel/Nemo-DETR-dg.pth"
         
         # IF density class run
         else:
             print("DENSITY CLASS RUN")
-            run_nemo_density(disp_attention, nmsup, iou_threshold, run_folder)
+            path_to_pth = "./NemoModel/Nemo-DETR-dg.pth"
+        
+        #Run Nemo
+        run_nemo(disp_attention, nmsup, iou_threshold, run_folder, path_to_pth)
 
         path = os.path.abspath('results.zip')
         cur_mp4_folders.clear()
@@ -100,31 +103,17 @@ def process_image():
 
 
 # Run Nemo
-def run_nemo_density(disp_attention, nmsup, iou_threshold, images_to_run):
+def run_nemo(disp_attention, nmsup, iou_threshold, images_to_run, path_to_pth):
     time.sleep(2)
     print("Running Nemo")
     subprocess.call(["python3", "./NemoModel/detr/test.py",
                      "--data_path", images_to_run,
-                     "--resume", "./NemoModel/Nemo-DETR-dg.pth",
+                     "--resume", path_to_pth,
                      "--output_dir", "./ProcessedImages/",
                      "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
                      "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)])
     get_processed_images(disp_attention)
     clean_up_nemo_run(disp_attention)
-
-
-def run_nemo_single(disp_attention, nmsup, iou_threshold, images_to_run):
-    time.sleep(2)
-    print("Running Nemo")
-    subprocess.call(["python3", "./NemoModel/detr/test.py",
-                     "--data_path", images_to_run,
-                     "--resume", "./NemoModel/Nemo-DETR-dg.pth",
-                     "--output_dir", "./ProcessedImages/",
-                     "--device", "cpu", "--disp", "1", "--disp_attn", str(disp_attention),
-                     "--nmsup", str(nmsup), "--iou_thresh", str(iou_threshold)])
-    get_processed_images(disp_attention)
-    clean_up_nemo_run(disp_attention)
-
 
 def get_processed_images(disp_attention):
     """ Function to append processed Nemo files to an array. """
