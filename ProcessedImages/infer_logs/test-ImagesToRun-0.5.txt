@@ -30,3 +30,5 @@
 0,296,checkpoint_max_mAP.pth,0.0
 1,492,Nemo-DETR-dg.pth,0.684
 25,492,Nemo-DETR-dg.pth,0.4698
+1,492,Nemo-DETR-dg.pth,0.7891
+14,492,Nemo-DETR-dg.pth,0.3303
