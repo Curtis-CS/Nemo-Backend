@@ -81,9 +81,9 @@ def process_image():
     if files_left < 1:
         
         # If single class run
-        if run_type:
+        if run_type == "true":
             print("SINGLE CLASS RUN")
-            path_to_pth = "./NemoModel/Nemo-DETR-dg.pth"
+            path_to_pth = "./NemoModel/checkpoint_max_mAP.pth"
         
         # IF density class run
         else:

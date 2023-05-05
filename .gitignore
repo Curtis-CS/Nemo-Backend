@@ -1,4 +1,6 @@
 /NemoModel/Nemo-DETR-dg.pth/
 NemoModel/Nemo-DETR-dg.pth
+/NemoModel/checkpoint_max_mAP.pth/
+NemoModel/checkpoint_max_mAP.pth
 /results.zip
 results.zip
